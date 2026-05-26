@@ -1,0 +1,94 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "mysql"
+}
+
+enum ProductCategory {
+  FURNITURE
+  ELECTRONICS
+  HOME_GARDEN
+  CLOTHING
+  BOOKS
+  SPORTS
+  TOYS
+  VEHICLES
+}
+
+enum ProductStatus {
+  ACTIVE
+  SOLD
+  HIDDEN
+}
+
+model User {
+  id            String    @id @default(cuid())
+  name          String
+  email         String    @unique
+  password      String
+  image         String?
+  location      String
+  rating        Float     @default(0)
+  responseRate  Int       @default(0)
+  productsSold  Int       @default(0)
+  activeListing Int       @default(0)
+  savedItems    Int       @default(0)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  products  Product[]
+  chatsAsBuyer  Chat[]    @relation("BuyerChats")
+  chatsAsSeller Chat[]    @relation("SellerChats")
+  messages  Message[]
+}
+
+model Product {
+  id          String          @id @default(cuid())
+  title       String
+  description String
+  price       Int
+  category    ProductCategory
+  condition   String
+  location    String
+  images      String   @default("[]")
+  status      ProductStatus   @default(ACTIVE)
+  userId      String
+  user        User            @relation(fields: [userId], references: [id])
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+
+  chats Chat[]
+}
+
+model Chat {
+  id            String    @id @default(cuid())
+  productId     String
+  product       Product   @relation(fields: [productId], references: [id])
+  buyerId       String
+  buyer         User      @relation("BuyerChats", fields: [buyerId], references: [id])
+  sellerId      String
+  seller        User      @relation("SellerChats", fields: [sellerId], references: [id])
+  lastMessage   String?
+  lastMessageAt DateTime?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  messages Message[]
+}
+
+model Message {
+  id        String   @id @default(cuid())
+  chatId    String
+  chat      Chat     @relation(fields: [chatId], references: [id])
+  senderId  String
+  sender    User     @relation(fields: [senderId], references: [id])
+  text      String
+  unread    Boolean  @default(true)
+  createdAt DateTime @default(now())
+
+  @@index([chatId])
+  @@index([senderId])
+}

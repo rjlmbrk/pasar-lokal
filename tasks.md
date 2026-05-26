@@ -9,7 +9,7 @@ Dokumen ini berisi panduan langkah demi langkah (roadmap) pengerjaan platform **
 | Fase | Fokus Utama | Target Output | Status |
 | :--- | :--- | :--- | :--- |
 | **Fase 1** | Inisialisasi & Konfigurasi Proyek | Struktur folder siap, Next.js, Tailwind, & TypeScript Strict aktif. | ✅ Selesai |
-| **Fase 2** | Basis Data & Klien Singleton | Skema MySQL (Prisma/Drizzle) dan *connection pooling* siap. | ⬜ Belum Mulai |
+| **Fase 2** | Basis Data & Klien Singleton | Skema MySQL (Prisma) dan *connection pooling* siap. | ✅ Selesai |
 | **Fase 3** | Komponen Global & Tata Letak (`Layout`) | `Navbar` global, komponen utilitas gambar, dan tipe data global. | ⬜ Belum Mulai |
 | **Fase 4** | Fitur Autentikasi (`(auth)`) | Halaman Login/Register dinamis dengan umpan balik Sonner. | ⬜ Belum Mulai |
 | **Fase 5** | Eksplorasi & Unggah Produk (`/`, `sell`) | Halaman beranda, detail produk, dan formulir pasang iklan. | ⬜ Belum Mulai |
@@ -34,15 +34,15 @@ Dokumen ini berisi panduan langkah demi langkah (roadmap) pengerjaan platform **
     * Buat cabang baru `feature/setup-project` untuk memulai pengerjaan awal.
 
 ### Fase 2: Konfigurasi Basis Data & Skema MySQL
-* [ ] **2.1. Inisialisasi ORM & Environment Variables**
+* [x] **2.1. Inisialisasi ORM & Environment Variables**
     * Setup Prisma/Drizzle di dalam proyek. Buat folder `prisma/` di tingkat root.
     * Simpan kredensial database `DATABASE_URL` di dalam berkas `.env.local` (jangan diunggah ke repositori publik).
-* [ ] **2.2. Perancangan Skema Tabel MySQL**
+* [x] **2.2. Perancangan Skema Tabel MySQL**
     * Definisikan model tabel pada berkas `schema.prisma` yang meliputi:
         * `User`: Data profil, nama, email, password, lokasi regional, dan statistik performa.
         * `Product`: Detail barang, kategori, harga, lokasi detail, status, deskripsi kondisi, dan timestamp.
         * `Chat` & `Message`: Relasi obrolan antar pengguna, pesan terakhir, teks, dan status `unread`.
-* [ ] **2.3. Implementasi DB Client Singleton**
+* [x] **2.3. Implementasi DB Client Singleton**
     * Buat berkas `src/lib/db.ts`.
     * Konfigurasikan koneksi database MySQL menggunakan pola *singleton* atau *connection pool* untuk mencegah kehabisan slot koneksi saat *live reload* di tahap pengembangan.
 
