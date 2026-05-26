@@ -10,7 +10,7 @@ Dokumen ini berisi panduan langkah demi langkah (roadmap) pengerjaan platform **
 | :--- | :--- | :--- | :--- |
 | **Fase 1** | Inisialisasi & Konfigurasi Proyek | Struktur folder siap, Next.js, Tailwind, & TypeScript Strict aktif. | ✅ Selesai |
 | **Fase 2** | Basis Data & Klien Singleton | Skema MySQL (Prisma) dan *connection pooling* siap. | ✅ Selesai |
-| **Fase 3** | Komponen Global & Tata Letak (`Layout`) | `Navbar` global, komponen utilitas gambar, dan tipe data global. | ⬜ Belum Mulai |
+| **Fase 3** | Komponen Global & Tata Letak (`Layout`) | `Navbar` global, komponen utilitas gambar, dan tipe data global. | ✅ Selesai |
 | **Fase 4** | Fitur Autentikasi (`(auth)`) | Halaman Login/Register dinamis dengan umpan balik Sonner. | ⬜ Belum Mulai |
 | **Fase 5** | Eksplorasi & Unggah Produk (`/`, `sell`) | Halaman beranda, detail produk, dan formulir pasang iklan. | ⬜ Belum Mulai |
 | **Fase 6** | Sistem Komunikasi & Dasbor (`chat`, `profile`) | Jendela obrolan real-time (COD) dan manajemen barang terjual. | ⬜ Belum Mulai |
@@ -47,12 +47,12 @@ Dokumen ini berisi panduan langkah demi langkah (roadmap) pengerjaan platform **
     * Konfigurasikan koneksi database MySQL menggunakan pola *singleton* atau *connection pool* untuk mencegah kehabisan slot koneksi saat *live reload* di tahap pengembangan.
 
 ### Fase 3: Komponen Global & Tata Letak (`Layout`)
-* [ ] **3.1. Pembuatan Tipe Data Global**
+* [x] **3.1. Pembuatan Tipe Data Global**
     * Definisikan semua interface tipe data di dalam folder `src/types/`.
     * **Aturan Ketat**: Dilarang menggunakan tipe `any`. Gunakan tipe data eksplisit pada parameter fungsi dan nilai kembalian (*return value*).
-* [ ] **3.2. Komponen Proteksi Gambar Fallback**
+* [x] **3.2. Komponen Proteksi Gambar Fallback**
     * Buat komponen `ImageWithFallback.tsx` menggunakan komponen bawaan Next.js `<Image />` untuk mencegah kerusakan tampilan visual jika tautan eksternal gagal dimuat.
-* [ ] **3.3. Komponen `Navbar.tsx` Global**
+* [x] **3.3. Komponen `Navbar.tsx` Global**
     * Letakkan di `src/components/shared/Navbar.tsx` dengan sifat *sticky* dan efek *blur backdrop*.
     * Integrasikan logo daun (`Leaf`), input teks pencarian (`searchQuery`), tombol filter wilayah (Default: "Purbalingga") dengan ikon `MapPin`, serta tautan navigasi cepat (`/chat`, `/sell`, `/profile`).
 
