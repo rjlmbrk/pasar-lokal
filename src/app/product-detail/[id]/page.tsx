@@ -68,13 +68,13 @@ export default function ProductDetailPage() {
             />
           </div>
           {product.images.length > 1 && (
-            <div className="mt-3 flex gap-2">
+            <div className="mt-3 flex gap-2 overflow-x-auto pb-1 scrollbar-none">
               {product.images.map((img, i) => (
                 <button
                   key={img}
                   type="button"
                   onClick={() => setSelectedImage(i)}
-                  className={`relative h-16 w-20 overflow-hidden rounded-xl border-2 transition-colors ${
+                  className={`relative h-16 w-20 shrink-0 overflow-hidden rounded-xl border-2 transition-colors ${
                     i === selectedImage
                       ? "border-emerald-500"
                       : "border-transparent"
