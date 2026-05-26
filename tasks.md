@@ -11,7 +11,7 @@ Dokumen ini berisi panduan langkah demi langkah (roadmap) pengerjaan platform **
 | **Fase 1** | Inisialisasi & Konfigurasi Proyek | Struktur folder siap, Next.js, Tailwind, & TypeScript Strict aktif. | ✅ Selesai |
 | **Fase 2** | Basis Data & Klien Singleton | Skema MySQL (Prisma) dan *connection pooling* siap. | ✅ Selesai |
 | **Fase 3** | Komponen Global & Tata Letak (`Layout`) | `Navbar` global, komponen utilitas gambar, dan tipe data global. | ✅ Selesai |
-| **Fase 4** | Fitur Autentikasi (`(auth)`) | Halaman Login/Register dinamis dengan umpan balik Sonner. | ⬜ Belum Mulai |
+| **Fase 4** | Fitur Autentikasi (`(auth)`) | Halaman Login/Register dinamis dengan umpan balik Sonner. | ✅ Selesai |
 | **Fase 5** | Eksplorasi & Unggah Produk (`/`, `sell`) | Halaman beranda, detail produk, dan formulir pasang iklan. | ⬜ Belum Mulai |
 | **Fase 6** | Sistem Komunikasi & Dasbor (`chat`, `profile`) | Jendela obrolan real-time (COD) dan manajemen barang terjual. | ⬜ Belum Mulai |
 | **Fase 7** | Optimasi, Validasi, & Deployment | Lolos kueri tipe data, responsif mobile, dan rilis ke Vercel. | ⬜ Belum Mulai |
@@ -57,13 +57,13 @@ Dokumen ini berisi panduan langkah demi langkah (roadmap) pengerjaan platform **
     * Integrasikan logo daun (`Leaf`), input teks pencarian (`searchQuery`), tombol filter wilayah (Default: "Purbalingga") dengan ikon `MapPin`, serta tautan navigasi cepat (`/chat`, `/sell`, `/profile`).
 
 ### Fase 4: Fitur Autentikasi (`(auth)`)
-* [ ] **4.1. Pembuatan Halaman Terpadu**
+* [x] **4.1. Pembuatan Halaman Terpadu**
     * Buat rute grup `src/app/(auth)/` untuk mengelola proses pendaftaran dan masuk log.
     * Gunakan satu kontainer dinamis berbasis state `isRegister` untuk beralih mode antara Sign In dan Sign Up tanpa pindah halaman.
-* [ ] **4.2. UI Form & Penanganan Input**
+* [x] **4.2. UI Form & Penanganan Input**
     * Gunakan komponen input dari shadcn (`Mail` dan `Lock`).
     * Terapkan umpan balik instan menggunakan tombol submit adaptif dengan indikator pemuatan statis (`isLoading`).
-* [ ] **4.3. Integrasi Notifikasi & Pihak Ketiga**
+* [x] **4.3. Integrasi Notifikasi & Pihak Ketiga**
     * Hubungkan aksi submit dengan pustaka notifikasi **Sonner** (`toast.success`).
     * Sediakan opsi masuk pihak ketiga menggunakan tombol Google Auth.
 
