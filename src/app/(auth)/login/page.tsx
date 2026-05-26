@@ -1,7 +1,7 @@
 "use client"
 
-import { useState } from "react"
-import { Mail, Lock, Leaf, Eye, EyeOff } from "lucide-react"
+import { useActionState, useEffect, useState } from "react"
+import { Mail, Lock, Leaf, Eye, EyeOff, User, MapPin } from "lucide-react"
 import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -14,35 +14,24 @@ import {
   CardContent,
   CardFooter,
 } from "@/components/ui/card"
+import { loginUser, registerUser, type ActionResult } from "./actions"
+
+const initialState: ActionResult = { success: false, message: "" }
 
 export default function AuthPage() {
   const [isRegister, setIsRegister] = useState(false)
-  const [isLoading, setIsLoading] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
+  const [showConfirm, setShowConfirm] = useState(false)
 
-  const [form, setForm] = useState({
-    name: "",
-    email: "",
-    password: "",
-  })
+  const action = isRegister ? registerUser : loginUser
 
-  function handleChange(e: React.ChangeEvent<HTMLInputElement>) {
-    setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }))
-  }
+  const [state, formAction, pending] = useActionState(action, initialState)
 
-  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
-    e.preventDefault()
-    setIsLoading(true)
-
-    await new Promise((resolve) => setTimeout(resolve, 1500))
-
-    toast.success(
-      isRegister
-        ? "Akun berhasil dibuat! Silakan masuk."
-        : "Berhasil masuk ke PasarLokal!"
-    )
-    setIsLoading(false)
-  }
+  useEffect(() => {
+    if (state.success && state.message) {
+      toast.success(state.message)
+    }
+  }, [state.success, state.message])
 
   return (
     <Card className="w-full max-w-sm">
@@ -60,19 +49,24 @@ export default function AuthPage() {
       </CardHeader>
 
       <CardContent>
-        <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+        <form action={formAction} className="flex flex-col gap-4">
           {isRegister && (
             <div className="flex flex-col gap-2">
               <Label htmlFor="name">Nama Lengkap</Label>
-              <Input
-                id="name"
-                name="name"
-                type="text"
-                placeholder="Budi Santoso"
-                value={form.name}
-                onChange={handleChange}
-                required={isRegister}
-              />
+              <div className="relative">
+                <User className="pointer-events-none absolute left-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                <Input
+                  id="name"
+                  name="name"
+                  type="text"
+                  placeholder="Budi Santoso"
+                  className="pl-8"
+                  required
+                />
+              </div>
+              {state.errors?.name && (
+                <p className="text-xs text-red-500">{state.errors.name}</p>
+              )}
             </div>
           )}
 
@@ -86,11 +80,12 @@ export default function AuthPage() {
                 type="email"
                 placeholder="nama@email.com"
                 className="pl-8"
-                value={form.email}
-                onChange={handleChange}
                 required
               />
             </div>
+            {state.errors?.email && (
+              <p className="text-xs text-red-500">{state.errors.email}</p>
+            )}
           </div>
 
           <div className="flex flex-col gap-2">
@@ -103,8 +98,6 @@ export default function AuthPage() {
                 type={showPassword ? "text" : "password"}
                 placeholder="Min. 8 karakter"
                 className="pl-8 pr-8"
-                value={form.password}
-                onChange={handleChange}
                 required
                 minLength={8}
               />
@@ -121,10 +114,70 @@ export default function AuthPage() {
                 )}
               </button>
             </div>
+            {state.errors?.password && (
+              <p className="text-xs text-red-500">{state.errors.password}</p>
+            )}
           </div>
 
-          <Button type="submit" disabled={isLoading} className="w-full">
-            {isLoading
+          {isRegister && (
+            <>
+              <div className="flex flex-col gap-2">
+                <Label htmlFor="confirmPassword">Konfirmasi Kata Sandi</Label>
+                <div className="relative">
+                  <Lock className="pointer-events-none absolute left-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                  <Input
+                    id="confirmPassword"
+                    name="confirmPassword"
+                    type={showConfirm ? "text" : "password"}
+                    placeholder="Ulangi kata sandi"
+                    className="pl-8 pr-8"
+                    required
+                    minLength={8}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowConfirm(!showConfirm)}
+                    className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                    tabIndex={-1}
+                  >
+                    {showConfirm ? (
+                      <EyeOff className="h-4 w-4" />
+                    ) : (
+                      <Eye className="h-4 w-4" />
+                    )}
+                  </button>
+                </div>
+                {state.errors?.confirmPassword && (
+                  <p className="text-xs text-red-500">
+                    {state.errors.confirmPassword}
+                  </p>
+                )}
+              </div>
+
+              <div className="flex flex-col gap-2">
+                <Label htmlFor="location">Lokasi</Label>
+                <div className="relative">
+                  <MapPin className="pointer-events-none absolute left-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                  <Input
+                    id="location"
+                    name="location"
+                    type="text"
+                    placeholder="Purbalingga"
+                    className="pl-8"
+                    required
+                  />
+                </div>
+                {state.errors?.location && (
+                  <p className="text-xs text-red-500">
+                    {state.errors.location}
+                  </p>
+                )}
+              </div>
+            </>
+          )}
+
+          <Button type="submit" disabled={pending} className="w-full">
+            {pending
               ? "Memproses..."
               : isRegister
                 ? "Daftar"
@@ -143,7 +196,7 @@ export default function AuthPage() {
           </div>
         </div>
 
-        <Button variant="outline" className="w-full gap-2" disabled={isLoading}>
+        <Button variant="outline" className="w-full gap-2" disabled={pending}>
           <svg className="h-4 w-4" viewBox="0 0 24 24">
             <path
               d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z"
@@ -171,10 +224,7 @@ export default function AuthPage() {
           {isRegister ? "Sudah punya akun?" : "Belum punya akun?"}{" "}
           <button
             type="button"
-            onClick={() => {
-              setIsRegister(!isRegister)
-              setForm({ name: "", email: "", password: "" })
-            }}
+            onClick={() => setIsRegister(!isRegister)}
             className="font-medium text-primary hover:underline transition-colors"
           >
             {isRegister ? "Masuk" : "Daftar"}
