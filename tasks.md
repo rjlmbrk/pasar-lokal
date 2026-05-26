@@ -8,7 +8,7 @@ Dokumen ini berisi panduan langkah demi langkah (roadmap) pengerjaan platform **
 
 | Fase | Fokus Utama | Target Output | Status |
 | :--- | :--- | :--- | :--- |
-| **Fase 1** | Inisialisasi & Konfigurasi Proyek | Struktur folder siap, Next.js, Tailwind, & TypeScript Strict aktif. | ⬜ Belum Mulai |
+| **Fase 1** | Inisialisasi & Konfigurasi Proyek | Struktur folder siap, Next.js, Tailwind, & TypeScript Strict aktif. | ✅ Selesai |
 | **Fase 2** | Basis Data & Klien Singleton | Skema MySQL (Prisma/Drizzle) dan *connection pooling* siap. | ⬜ Belum Mulai |
 | **Fase 3** | Komponen Global & Tata Letak (`Layout`) | `Navbar` global, komponen utilitas gambar, dan tipe data global. | ⬜ Belum Mulai |
 | **Fase 4** | Fitur Autentikasi (`(auth)`) | Halaman Login/Register dinamis dengan umpan balik Sonner. | ⬜ Belum Mulai |
@@ -21,15 +21,15 @@ Dokumen ini berisi panduan langkah demi langkah (roadmap) pengerjaan platform **
 ## 🛠️ Detail Rincian Tugas (Task Breakdown)
 
 ### Fase 1: Inisialisasi & Konfigurasi Proyek
-* [ ] **1.1. Setup Next.js & TypeScript**
+* [x] **1.1. Setup Next.js & TypeScript**
     * Buat proyek Next.js baru versi terbaru menggunakan **App Router**.
     * Pastikan konfigurasi `"strict": true` aktif pada berkas `tsconfig.json`.
-* [ ] **1.2. Integrasi TailwindCSS & Desain Sistem**
+* [x] **1.2. Integrasi TailwindCSS & Desain Sistem**
     * Konfigurasikan TailwindCSS sesuai dengan palet warna identitas brand: warna utama menggunakan `emerald-600` & `emerald-700`, latar belakang menggunakan `slate-50`/`slate-100`, dan teks menggunakan `slate-800`/`slate-900`.
-* [ ] **1.3. Instalasi Dasar shadcn/ui**
+* [x] **1.3. Instalasi Dasar shadcn/ui**
     * Inisialisasi `shadcn/ui` melalui CLI (`npx shadcn@latest init`).
     * Pastikan fungsi gabungan kelas `cn()` terpasang di `src/lib/utils.ts`.
-* [ ] **1.4. Manajemen Repositori Git**
+* [x] **1.4. Manajemen Repositori Git**
     * Lindungi cabang `main` hanya untuk kode produksi yang stabil.
     * Buat cabang baru `feature/setup-project` untuk memulai pengerjaan awal.
 
