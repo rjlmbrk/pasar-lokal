@@ -56,8 +56,8 @@ export default function ProductDetailPage() {
         Kembali
       </Link>
 
-      <div className="grid gap-6 lg:grid-cols-5">
-        <div className="lg:col-span-3">
+      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-5">
+        <div className="md:col-span-1 lg:col-span-3">
           <div className="relative aspect-[4/3] overflow-hidden rounded-2xl bg-slate-100">
             <ImageWithFallback
               src={product.images[selectedImage]}
@@ -92,7 +92,7 @@ export default function ProductDetailPage() {
           )}
         </div>
 
-        <div className="flex flex-col gap-4 lg:col-span-2">
+        <div className="flex flex-col gap-4 md:col-span-1 lg:col-span-2">
           <div>
             <h1 className="text-xl font-bold text-slate-800">
               {product.title}

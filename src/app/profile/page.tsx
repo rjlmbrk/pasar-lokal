@@ -69,24 +69,24 @@ export default function ProfilePage() {
         </div>
 
         {/* Stats */}
-        <div className="mt-5 grid grid-cols-3 gap-3">
-          <div className="rounded-xl bg-slate-50 p-3 text-center">
+        <div className="mt-5 grid grid-cols-3 gap-2 sm:gap-3">
+          <div className="rounded-xl bg-slate-50 p-2 text-center sm:p-3">
             <div className="flex items-center justify-center gap-1 text-sm font-bold text-slate-800">
-              <Package className="h-3.5 w-3.5 text-emerald-500" />
+              <Package className="h-3.5 w-3.5 shrink-0 text-emerald-500" />
               {user.productsSold}
             </div>
             <p className="mt-0.5 text-[10px] text-slate-400">Terjual</p>
           </div>
-          <div className="rounded-xl bg-slate-50 p-3 text-center">
+          <div className="rounded-xl bg-slate-50 p-2 text-center sm:p-3">
             <div className="flex items-center justify-center gap-1 text-sm font-bold text-slate-800">
-              <TrendingUp className="h-3.5 w-3.5 text-emerald-500" />
+              <TrendingUp className="h-3.5 w-3.5 shrink-0 text-emerald-500" />
               {user.activeListing}
             </div>
             <p className="mt-0.5 text-[10px] text-slate-400">Listing Aktif</p>
           </div>
-          <div className="rounded-xl bg-slate-50 p-3 text-center">
+          <div className="rounded-xl bg-slate-50 p-2 text-center sm:p-3">
             <div className="flex items-center justify-center gap-1 text-sm font-bold text-slate-800">
-              <Heart className="h-3.5 w-3.5 text-red-400" />
+              <Heart className="h-3.5 w-3.5 shrink-0 text-red-400" />
               {user.savedItems}
             </div>
             <p className="mt-0.5 text-[10px] text-slate-400">Disimpan</p>

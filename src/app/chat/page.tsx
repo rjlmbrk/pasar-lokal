@@ -46,9 +46,7 @@ export default function ChatPage() {
       <div
         className={`${
           showSidebar ? "flex" : "hidden"
-        } w-full flex-col border-r border-slate-200 bg-white sm:w-80 sm:flex ${
-          activeChat && !showSidebar ? "hidden sm:hidden" : ""
-        }`}
+        } w-full flex-col border-r border-slate-200 bg-white sm:flex sm:w-80`}
       >
         <div className="border-b border-slate-200 p-4">
           <h2 className="text-base font-bold text-slate-800">Percakapan</h2>

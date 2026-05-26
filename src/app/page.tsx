@@ -29,15 +29,15 @@ export default function HomePage() {
   return (
     <>
       <section className="border-b border-slate-200 bg-white">
-        <div className="px-4 py-4 sm:px-6 lg:px-8">
+        <div className="mx-auto max-w-7xl px-4 py-4 sm:px-6 lg:px-8">
           <div className="mb-4 flex items-center justify-between">
             <h2 className="text-lg font-bold text-slate-800">Kategori</h2>
           </div>
-          <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-none">
+          <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-none lg:grid lg:grid-cols-9 lg:gap-3 lg:overflow-visible">
             <button
               type="button"
               onClick={() => setSelectedCategory(null)}
-              className={`flex shrink-0 flex-col items-center gap-1 rounded-2xl px-4 py-3 transition-colors ${
+              className={`flex flex-col items-center gap-1 rounded-2xl px-4 py-3 transition-colors ${
                 selectedCategory === null
                   ? "bg-emerald-600 text-white"
                   : "bg-white text-slate-600 ring-1 ring-slate-200 hover:ring-emerald-200"
@@ -51,7 +51,7 @@ export default function HomePage() {
                 key={cat.value}
                 type="button"
                 onClick={() => setSelectedCategory(cat.value)}
-                className={`flex shrink-0 flex-col items-center gap-1 rounded-2xl px-4 py-3 transition-colors ${
+                className={`flex flex-col items-center gap-1 rounded-2xl px-4 py-3 transition-colors ${
                   selectedCategory === cat.value
                     ? "bg-emerald-600 text-white"
                     : "bg-white text-slate-600 ring-1 ring-slate-200 hover:ring-emerald-200"
