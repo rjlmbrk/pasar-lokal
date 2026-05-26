@@ -1,4 +1,4 @@
-import type { ProductItem } from "@/types"
+import type { ProductItem, ChatItem, MessageItem, UserProfile } from "@/types"
 
 const NOW = new Date("2026-05-26T10:00:00Z")
 
@@ -271,4 +271,212 @@ export function formatRelativeTime(date: Date): string {
 
 export function getProductById(id: string): ProductItem | undefined {
   return MOCK_PRODUCTS.find((p) => p.id === id)
+}
+
+export const CURRENT_USER: UserProfile = {
+  id: "u1",
+  name: "Budi Santoso",
+  email: "budi@example.com",
+  image: "https://i.pravatar.cc/150?u=budi",
+  location: "Purbalingga",
+  rating: 4.8,
+  responseRate: 95,
+  productsSold: 12,
+  activeListing: 5,
+  savedItems: 3,
+  createdAt: daysAgo(180),
+}
+
+export const MOCK_CHATS: ChatItem[] = [
+  {
+    id: "c1",
+    product: MOCK_PRODUCTS[1],
+    buyer: MOCK_PRODUCTS[1].user,
+    seller: CURRENT_USER,
+    lastMessage: "Baik, kalau gitu saya ambil besok ya",
+    lastMessageAt: hoursAgo(1),
+    unreadCount: 2,
+    createdAt: hoursAgo(24),
+  },
+  {
+    id: "c2",
+    product: MOCK_PRODUCTS[2],
+    buyer: CURRENT_USER,
+    seller: MOCK_PRODUCTS[2].user,
+    lastMessage: "Masih ada minat?",
+    lastMessageAt: hoursAgo(3),
+    unreadCount: 0,
+    createdAt: hoursAgo(48),
+  },
+  {
+    id: "c3",
+    product: MOCK_PRODUCTS[4],
+    buyer: CURRENT_USER,
+    seller: MOCK_PRODUCTS[4].user,
+    lastMessage: "Oke deal, ketemu jam 3",
+    lastMessageAt: hoursAgo(6),
+    unreadCount: 0,
+    createdAt: daysAgo(3),
+  },
+  {
+    id: "c4",
+    product: MOCK_PRODUCTS[0],
+    buyer: MOCK_PRODUCTS[0].user,
+    seller: CURRENT_USER,
+    lastMessage: "Harga bisa kurang?",
+    lastMessageAt: daysAgo(2),
+    unreadCount: 0,
+    createdAt: daysAgo(7),
+  },
+]
+
+export const MOCK_MESSAGES: Record<string, MessageItem[]> = {
+  c1: [
+    {
+      id: "m1",
+      chatId: "c1",
+      senderId: "u2",
+      text: "Halo, apakah MacBook ini masih tersedia?",
+      unread: false,
+      createdAt: hoursAgo(6),
+    },
+    {
+      id: "m2",
+      chatId: "c1",
+      senderId: "u1",
+      text: "Masih ada kak. Masih mulus dan berfungsi normal.",
+      unread: false,
+      createdAt: hoursAgo(5),
+    },
+    {
+      id: "m3",
+      chatId: "c1",
+      senderId: "u2",
+      text: "Apakah harganya bisa nego? Saya minat kalau 7jt",
+      unread: false,
+      createdAt: hoursAgo(3),
+    },
+    {
+      id: "m4",
+      chatId: "c1",
+      senderId: "u1",
+      text: "7.2jt ya, soalnya masih boneng charger original.",
+      unread: false,
+      createdAt: hoursAgo(2),
+    },
+    {
+      id: "m5",
+      chatId: "c1",
+      senderId: "u2",
+      text: "Baik, kalau gitu saya ambil besok ya",
+      unread: true,
+      createdAt: hoursAgo(1),
+    },
+    {
+      id: "m6",
+      chatId: "c1",
+      senderId: "u2",
+      text: "Ketemu di alun-alun Purbalingga jam 10 ya",
+      unread: true,
+      createdAt: hoursAgo(1),
+    },
+  ],
+  c2: [
+    {
+      id: "m7",
+      chatId: "c2",
+      senderId: "u1",
+      text: "Halo, pot bunganya masih ada?",
+      unread: false,
+      createdAt: hoursAgo(24),
+    },
+    {
+      id: "m8",
+      chatId: "c2",
+      senderId: "u3",
+      text: "Masih ada kak. Masih banyak stok",
+      unread: false,
+      createdAt: hoursAgo(20),
+    },
+    {
+      id: "m9",
+      chatId: "c2",
+      senderId: "u3",
+      text: "Masih ada minat?",
+      unread: false,
+      createdAt: hoursAgo(3),
+    },
+  ],
+  c3: [
+    {
+      id: "m10",
+      chatId: "c3",
+      senderId: "u1",
+      text: "Halo, buku Pram nya masih dijual?",
+      unread: false,
+      createdAt: daysAgo(3),
+    },
+    {
+      id: "m11",
+      chatId: "c3",
+      senderId: "u5",
+      text: "Masih. Saya jual 45rb",
+      unread: false,
+      createdAt: daysAgo(3),
+    },
+    {
+      id: "m12",
+      chatId: "c3",
+      senderId: "u1",
+      text: "40rb gimana?",
+      unread: false,
+      createdAt: daysAgo(3),
+    },
+    {
+      id: "m13",
+      chatId: "c3",
+      senderId: "u5",
+      text: "Oke deal, ketemu jam 3",
+      unread: false,
+      createdAt: hoursAgo(6),
+    },
+  ],
+  c4: [
+    {
+      id: "m14",
+      chatId: "c4",
+      senderId: "u4",
+      text: "Halo, kursinya masih ada?",
+      unread: false,
+      createdAt: daysAgo(7),
+    },
+    {
+      id: "m15",
+      chatId: "c4",
+      senderId: "u1",
+      text: "Masih kak",
+      unread: false,
+      createdAt: daysAgo(6),
+    },
+    {
+      id: "m16",
+      chatId: "c4",
+      senderId: "u4",
+      text: "Harga bisa kurang?",
+      unread: false,
+      createdAt: daysAgo(2),
+    },
+  ],
+}
+
+export function getChatById(id: string): ChatItem | undefined {
+  return MOCK_CHATS.find((c) => c.id === id)
+}
+
+export function getMessagesByChatId(chatId: string): MessageItem[] {
+  return MOCK_MESSAGES[chatId] ?? []
+}
+
+export function getUserProducts(userId: string): ProductItem[] {
+  return MOCK_PRODUCTS.filter((p) => p.user.id === userId)
 }

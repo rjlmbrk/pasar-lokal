@@ -13,7 +13,7 @@ Dokumen ini berisi panduan langkah demi langkah (roadmap) pengerjaan platform **
 | **Fase 3** | Komponen Global & Tata Letak (`Layout`) | `Navbar` global, komponen utilitas gambar, dan tipe data global. | ✅ Selesai |
 | **Fase 4** | Fitur Autentikasi (`(auth)`) | Halaman Login/Register dinamis dengan umpan balik Sonner. | ✅ Selesai |
 | **Fase 5** | Eksplorasi & Unggah Produk (`/`, `sell`) | Halaman beranda, detail produk, dan formulir pasang iklan. | ✅ Selesai |
-| **Fase 6** | Sistem Komunikasi & Dasbor (`chat`, `profile`) | Jendela obrolan real-time (COD) dan manajemen barang terjual. | ⬜ Belum Mulai |
+| **Fase 6** | Sistem Komunikasi & Dasbor (`chat`, `profile`) | Jendela obrolan real-time (COD) dan manajemen barang terjual. | ✅ Selesai |
 | **Fase 7** | Optimasi, Validasi, & Deployment | Lolos kueri tipe data, responsif mobile, dan rilis ke Vercel. | ⬜ Belum Mulai |
 
 ---
@@ -79,10 +79,10 @@ Dokumen ini berisi panduan langkah demi langkah (roadmap) pengerjaan platform **
     * Sediakan input data lengkap dan aktifkan sakelar otomatis untuk opsi pembayaran Cash on Delivery (COD).
 
 ### Fase 6: Sistem Komunikasi & Dasbor (`chat`, `profile`)
-* [ ] **6.1. Halaman Sistem Obrolan (`src/app/chat/`)**
+* [x] **6.1. Halaman Sistem Obrolan (`src/app/chat/`)**
     * **Sidebar Percakapan**: Tampilkan list obrolan aktif beserta miniatur gambar barang dan indikator titik merah (`red-500`) jika ada pesan belum terbaca.
     * **Jendela Utama**: Tampilkan riwayat pesan masuk-keluar, header info produk yang dinegosiasikan, serta kolom ketik pesan melengkung penuh (`rounded-full`) dengan tombol `Send`.
-* [ ] **6.2. Dasbor Profil Pengguna (`src/app/profile/`)**
+* [x] **6.2. Dasbor Profil Pengguna (`src/app/profile/`)**
     * Buat kartu identitas berisi foto profil, nama, lokasi, tanggal bergabung, dan statistik penjualan.
     * Tampilkan grid barang yang sedang dijual dengan tombol aksi edit, bersandingan dengan kartu khusus "Tambah Barang" yang mengarah ke halaman `/sell`.
 
