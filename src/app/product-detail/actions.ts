@@ -56,30 +56,34 @@ export async function checkIsSaved(productId: string): Promise<boolean> {
 }
 
 export async function toggleSaveProduct(productId: string): Promise<{ saved: boolean } | { error: string }> {
-  const userId = await getSessionUserId()
-  if (!userId) return { error: "Harus login terlebih dahulu" }
+  try {
+    const userId = await getSessionUserId()
+    if (!userId) return { error: "Harus login terlebih dahulu" }
 
-  const existing = await db.savedProduct.findUnique({
-    where: { userId_productId: { userId, productId } },
-  })
+    const existing = await db.savedProduct.findUnique({
+      where: { userId_productId: { userId, productId } },
+    })
 
-  if (existing) {
-    await db.$transaction([
-      db.savedProduct.delete({ where: { id: existing.id } }),
-      db.user.update({
-        where: { id: userId },
-        data: { savedItems: { decrement: 1 } },
-      }),
-    ])
-    return { saved: false }
-  } else {
-    await db.$transaction([
-      db.savedProduct.create({ data: { userId, productId } }),
-      db.user.update({
-        where: { id: userId },
-        data: { savedItems: { increment: 1 } },
-      }),
-    ])
-    return { saved: true }
+    if (existing) {
+      await db.$transaction([
+        db.savedProduct.delete({ where: { id: existing.id } }),
+        db.user.update({
+          where: { id: userId },
+          data: { savedItems: { decrement: 1 } },
+        }),
+      ])
+      return { saved: false }
+    } else {
+      await db.$transaction([
+        db.savedProduct.create({ data: { userId, productId } }),
+        db.user.update({
+          where: { id: userId },
+          data: { savedItems: { increment: 1 } },
+        }),
+      ])
+      return { saved: true }
+    }
+  } catch {
+    return { error: "Terjadi kesalahan server" }
   }
 }

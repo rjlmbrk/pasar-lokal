@@ -77,6 +77,16 @@ export default function ProfilePage() {
   }, [router])
 
   useEffect(() => {
+    function onVisibility() {
+      if (document.visibilityState === "visible") {
+        fetchCurrentUser().then((u) => { if (u) setUser(u) })
+      }
+    }
+    document.addEventListener("visibilitychange", onVisibility)
+    return () => document.removeEventListener("visibilitychange", onVisibility)
+  }, [])
+
+  useEffect(() => {
     if (activeTab === "DISIMPAN" && savedProducts.length === 0) {
       setLoadingSaved(true)
       fetchSavedProducts().then((items) => {
