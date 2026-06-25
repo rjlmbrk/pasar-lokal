@@ -138,8 +138,16 @@ function ChatContent() {
           showSidebar ? "flex" : "hidden"
         } w-full flex-col border-r border-slate-200 bg-white sm:flex sm:w-80`}
       >
-        <div className="border-b border-slate-200 p-4">
+        <div className="flex items-center justify-between border-b border-slate-200 p-4">
           <h2 className="text-base font-bold text-slate-800">Percakapan</h2>
+          <button
+            type="button"
+            onClick={() => setShowSidebar(false)}
+            className="rounded-full p-1.5 text-slate-400 hover:bg-slate-100 hover:text-slate-600 transition-colors sm:hidden"
+            aria-label="Tutup daftar percakapan"
+          >
+            <ChevronLeft className="h-5 w-5" />
+          </button>
         </div>
 
         <div className="flex-1 overflow-y-auto">
