@@ -77,13 +77,11 @@ export default function ProfilePage() {
   }, [router])
 
   useEffect(() => {
-    function onVisibility() {
-      if (document.visibilityState === "visible") {
-        fetchCurrentUser().then((u) => { if (u) setUser(u) })
-      }
+    function onFocus() {
+      fetchCurrentUser().then((u) => { if (u) setUser(u) })
     }
-    document.addEventListener("visibilitychange", onVisibility)
-    return () => document.removeEventListener("visibilitychange", onVisibility)
+    window.addEventListener("focus", onFocus)
+    return () => window.removeEventListener("focus", onFocus)
   }, [])
 
   useEffect(() => {

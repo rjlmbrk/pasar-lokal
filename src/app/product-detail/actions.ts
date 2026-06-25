@@ -65,25 +65,24 @@ export async function toggleSaveProduct(productId: string): Promise<{ saved: boo
     })
 
     if (existing) {
-      await db.$transaction([
-        db.savedProduct.delete({ where: { id: existing.id } }),
-        db.user.update({
-          where: { id: userId },
-          data: { savedItems: { decrement: 1 } },
-        }),
-      ])
+      await db.savedProduct.delete({ where: { id: existing.id } })
+      await db.user.update({
+        where: { id: userId },
+        data: { savedItems: { decrement: 1 } },
+      })
+      console.log("toggleSaveProduct: unsaved", { userId, productId })
       return { saved: false }
     } else {
-      await db.$transaction([
-        db.savedProduct.create({ data: { userId, productId } }),
-        db.user.update({
-          where: { id: userId },
-          data: { savedItems: { increment: 1 } },
-        }),
-      ])
+      await db.savedProduct.create({ data: { userId, productId } })
+      await db.user.update({
+        where: { id: userId },
+        data: { savedItems: { increment: 1 } },
+      })
+      console.log("toggleSaveProduct: saved", { userId, productId })
       return { saved: true }
     }
-  } catch {
+  } catch (e) {
+    console.error("toggleSaveProduct error:", e)
     return { error: "Terjadi kesalahan server" }
   }
 }
