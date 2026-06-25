@@ -55,7 +55,7 @@ model Product {
   location    String
   lat         Float?
   lng         Float?
-  images      String   @default("[]")
+  images      String   @default("[]") @db.VarChar(2000)
   cod         Boolean  @default(true)
   status      ProductStatus   @default(ACTIVE)
   userId      String
