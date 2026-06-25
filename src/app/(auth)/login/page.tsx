@@ -1,8 +1,9 @@
 "use client"
 
 import { useActionState, useEffect, useState } from "react"
-import { Mail, Lock, Leaf, Eye, EyeOff, User, MapPin } from "lucide-react"
+import { Mail, Lock, Leaf, Eye, EyeOff, User } from "lucide-react"
 import { toast } from "sonner"
+import { LocationPicker } from "@/components/features/LocationPicker"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -18,20 +19,25 @@ import { loginUser, registerUser, type ActionResult } from "./actions"
 
 const initialState: ActionResult = { success: false, message: "" }
 
-export default function AuthPage() {
-  const [isRegister, setIsRegister] = useState(false)
+function AuthForm({ isRegister, onToggle }: { isRegister: boolean; onToggle: () => void }) {
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirm, setShowConfirm] = useState(false)
+  const [locationValue, setLocationValue] = useState("")
 
   const action = isRegister ? registerUser : loginUser
-
   const [state, formAction, pending] = useActionState(action, initialState)
 
   useEffect(() => {
     if (state.success && state.message) {
       toast.success(state.message)
+      if (isRegister) {
+        onToggle()
+      } else {
+        const redirect = new URLSearchParams(window.location.search).get("redirect") || "/"
+        window.location.href = redirect
+      }
     }
-  }, [state.success, state.message])
+  }, [state.success, state.message, isRegister])
 
   return (
     <Card className="w-full max-w-sm">
@@ -154,25 +160,11 @@ export default function AuthPage() {
                 )}
               </div>
 
-              <div className="flex flex-col gap-2">
-                <Label htmlFor="location">Lokasi</Label>
-                <div className="relative">
-                  <MapPin className="pointer-events-none absolute left-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                  <Input
-                    id="location"
-                    name="location"
-                    type="text"
-                    placeholder="Purbalingga"
-                    className="pl-8"
-                    required
-                  />
-                </div>
-                {state.errors?.location && (
-                  <p className="text-xs text-red-500">
-                    {state.errors.location}
-                  </p>
-                )}
-              </div>
+              <LocationPicker
+                value={locationValue}
+                onChange={setLocationValue}
+                error={state.errors?.location}
+              />
             </>
           )}
 
@@ -186,9 +178,6 @@ export default function AuthPage() {
         </form>
 
         <div className="relative my-6">
-          <div className="absolute inset-0 flex items-center">
-            <span className="w-full border-t border-border" />
-          </div>
           <div className="relative flex justify-center text-xs uppercase">
             <span className="bg-card px-2 text-muted-foreground">
               Atau masuk dengan
@@ -224,7 +213,7 @@ export default function AuthPage() {
           {isRegister ? "Sudah punya akun?" : "Belum punya akun?"}{" "}
           <button
             type="button"
-            onClick={() => setIsRegister(!isRegister)}
+            onClick={onToggle}
             className="font-medium text-primary hover:underline transition-colors"
           >
             {isRegister ? "Masuk" : "Daftar"}
@@ -232,5 +221,17 @@ export default function AuthPage() {
         </p>
       </CardFooter>
     </Card>
+  )
+}
+
+export default function AuthPage() {
+  const [isRegister, setIsRegister] = useState(false)
+
+  return (
+    <AuthForm
+      key={isRegister ? "register" : "login"}
+      isRegister={isRegister}
+      onToggle={() => setIsRegister(!isRegister)}
+    />
   )
 }

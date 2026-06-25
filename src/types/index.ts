@@ -20,7 +20,10 @@ export interface ProductItem {
   category: ProductCategory
   condition: string
   location: string
+  lat: number | null
+  lng: number | null
   images: string[]
+  cod: boolean
   status: ProductStatus
   user: UserProfile
   createdAt: Date

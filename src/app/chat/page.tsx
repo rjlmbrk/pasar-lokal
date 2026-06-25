@@ -1,43 +1,132 @@
 "use client"
 
-import { useState, useRef } from "react"
+import { useEffect, useState, useRef, Suspense } from "react"
+import { useSearchParams } from "next/navigation"
 import {
   Send,
   ChevronLeft,
   ChevronRight,
   Phone,
   MessageSquare,
+  Loader2,
+  Trash2,
 } from "lucide-react"
 import { ImageWithFallback } from "@/components/shared/ImageWithFallback"
+import { formatRelativeTime, formatPrice } from "@/lib/format"
+import { toast } from "sonner"
 import {
-  MOCK_CHATS,
-  getMessagesByChatId,
-  formatRelativeTime,
-  formatPrice,
-  CURRENT_USER,
-} from "@/lib/mock-data"
-import type { ChatItem, MessageItem } from "@/types"
+  fetchChats,
+  fetchMessages,
+  getCurrentUserForChat,
+  findOrCreateChat,
+  sendMessage,
+  markMessagesAsRead,
+  deleteChat,
+} from "./actions"
+import type { ChatItem, MessageItem, UserProfile } from "@/types"
 
-export default function ChatPage() {
-  const [activeChatId, setActiveChatId] = useState<string | null>("c1")
+function ChatContent() {
+  const searchParams = useSearchParams()
+  const [currentUser, setCurrentUser] = useState<UserProfile | null>(null)
+  const [chats, setChats] = useState<ChatItem[]>([])
+  const [messages, setMessages] = useState<MessageItem[]>([])
+  const [loading, setLoading] = useState(true)
+  const [activeChatId, setActiveChatId] = useState<string | null>(null)
   const [showSidebar, setShowSidebar] = useState(true)
   const [inputText, setInputText] = useState("")
+  const [sending, setSending] = useState(false)
+  const messagesEndRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
+  const initializedRef = useRef(false)
 
   const activeChat = activeChatId
-    ? MOCK_CHATS.find((c) => c.id === activeChatId)
+    ? chats.find((c) => c.id === activeChatId) ?? null
     : null
 
-  const messages = activeChatId ? getMessagesByChatId(activeChatId) : []
+  useEffect(() => {
+    if (initializedRef.current) return
+    initializedRef.current = true
 
-  function getOtherUser(chat: ChatItem) {
-    return chat.seller.id === CURRENT_USER.id ? chat.buyer : chat.seller
+    const productParam = searchParams.get("product")
+    const sellerParam = searchParams.get("seller")
+
+    Promise.all([getCurrentUserForChat(), fetchChats()]).then(
+      async ([user, chatList]) => {
+        setCurrentUser(user)
+        setChats(chatList)
+
+        let targetChatId: string | null = null
+
+        if (productParam && sellerParam && user) {
+          const existing = chatList.find(
+            (c) =>
+              c.product.id === productParam &&
+              (c.seller.id === sellerParam || c.buyer.id === sellerParam)
+          )
+          if (existing) {
+            targetChatId = existing.id
+          } else {
+            const created = await findOrCreateChat(productParam, sellerParam)
+            if (created) {
+              setChats((prev) => [created, ...prev])
+              targetChatId = created.id
+            }
+          }
+        } else if (chatList.length > 0) {
+          targetChatId = chatList[0].id
+        }
+
+        if (targetChatId) {
+          setActiveChatId(targetChatId)
+        }
+        setLoading(false)
+      }
+    )
+  }, [searchParams])
+
+  useEffect(() => {
+    if (activeChatId) {
+      Promise.all([
+        fetchMessages(activeChatId).then(setMessages),
+        markMessagesAsRead(activeChatId),
+      ])
+    }
+  }, [activeChatId])
+
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" })
+  }, [messages])
+
+  function getOtherUser(chat: ChatItem): UserProfile {
+    return chat.seller.id === currentUser?.id ? chat.buyer : chat.seller
   }
 
-  function handleSend(e: React.FormEvent) {
+  async function handleSend(e: React.FormEvent) {
     e.preventDefault()
-    if (!inputText.trim()) return
+    if (!inputText.trim() || !activeChatId || sending) return
+    setSending(true)
+    const text = inputText
     setInputText("")
+    const ok = await sendMessage(activeChatId, text)
+    setSending(false)
+    if (ok) {
+      fetchMessages(activeChatId).then(setMessages)
+      setChats((prev) =>
+        prev.map((c) =>
+          c.id === activeChatId
+            ? { ...c, lastMessage: text, lastMessageAt: new Date() }
+            : c
+        )
+      )
+    }
+  }
+
+  if (loading || !currentUser) {
+    return (
+      <div className="flex min-h-[calc(100vh-4rem)] items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-emerald-600" />
+      </div>
+    )
   }
 
   return (
@@ -53,65 +142,94 @@ export default function ChatPage() {
         </div>
 
         <div className="flex-1 overflow-y-auto">
-          {MOCK_CHATS.map((chat) => {
+          {chats.map((chat) => {
             const other = getOtherUser(chat)
             const isActive = chat.id === activeChatId
-            return (
-              <button
-                key={chat.id}
-                type="button"
-                onClick={() => {
-                  setActiveChatId(chat.id)
-                  setShowSidebar(false)
-                }}
-                className={`flex w-full items-start gap-3 border-b border-slate-100 p-4 text-left transition-colors hover:bg-slate-50 ${
-                  isActive ? "bg-emerald-50" : ""
-                }`}
-              >
-                <div className="relative shrink-0">
-                  <ImageWithFallback
-                    src={other.image ?? ""}
-                    alt={other.name}
-                    width={40}
-                    height={40}
-                    className="rounded-full object-cover"
-                    fallbackText={other.name[0]}
-                  />
-                  {chat.unreadCount > 0 && (
-                    <span className="absolute -right-0.5 -top-0.5 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-[9px] font-bold text-white">
-                      {chat.unreadCount}
-                    </span>
-                  )}
-                </div>
 
-                <div className="min-w-0 flex-1">
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm font-semibold text-slate-800">
-                      {other.name}
-                    </span>
-                    <span className="text-[10px] text-slate-400">
-                      {chat.lastMessageAt
-                        ? formatRelativeTime(chat.lastMessageAt)
-                        : ""}
-                    </span>
-                  </div>
-                  <p className="truncate text-xs text-slate-400">
-                    {chat.lastMessage}
-                  </p>
-                  <div className="mt-1 flex items-center gap-1.5">
+            async function handleDelete(e: React.MouseEvent) {
+              e.stopPropagation()
+              if (!window.confirm(`Hapus percakapan dengan ${other.name}?`)) return
+              const ok = await deleteChat(chat.id)
+              if (ok) {
+                toast.success("Percakapan berhasil dihapus")
+                setChats((prev) => prev.filter((c) => c.id !== chat.id))
+                if (activeChatId === chat.id) {
+                  setActiveChatId(null)
+                }
+              } else {
+                toast.error("Gagal menghapus percakapan")
+              }
+            }
+
+            return (
+              <div
+                key={chat.id}
+                className="group relative"
+              >
+                <button
+                  type="button"
+                  onClick={() => {
+                    setActiveChatId(chat.id)
+                    setShowSidebar(false)
+                  }}
+                  className={`flex w-full items-start gap-3 border-b border-slate-100 p-4 text-left transition-colors hover:bg-slate-50 ${
+                    isActive ? "bg-emerald-50" : ""
+                  }`}
+                >
+                  <div className="relative shrink-0">
                     <ImageWithFallback
-                      src={chat.product.images[0]}
-                      alt={chat.product.title}
-                      width={20}
-                      height={20}
-                      className="rounded object-cover"
+                      src={other.image ?? ""}
+                      alt={other.name}
+                      width={40}
+                      height={40}
+                      className="rounded-full object-cover"
+                      fallbackText={other.name[0]}
                     />
-                    <span className="truncate text-[10px] text-slate-400">
-                      {chat.product.title}
-                    </span>
+                    {chat.unreadCount > 0 && (
+                      <span className="absolute -right-0.5 -top-0.5 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-[9px] font-bold text-white">
+                        {chat.unreadCount}
+                      </span>
+                    )}
                   </div>
-                </div>
-              </button>
+
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm font-semibold text-slate-800">
+                        {other.name}
+                      </span>
+                      <span className="text-[10px] text-slate-400">
+                        {chat.lastMessageAt
+                          ? formatRelativeTime(chat.lastMessageAt)
+                          : ""}
+                      </span>
+                    </div>
+                    <p className="truncate text-xs text-slate-400">
+                      {chat.lastMessage}
+                    </p>
+                    <div className="mt-1 flex items-center gap-1.5">
+                      <ImageWithFallback
+                        src={chat.product.images[0]}
+                        alt={chat.product.title}
+                        width={20}
+                        height={20}
+                        className="rounded object-cover"
+                      />
+                      <span className="truncate text-[10px] text-slate-400">
+                        {chat.product.title}
+                      </span>
+                    </div>
+                  </div>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={handleDelete}
+                  className="absolute right-2 top-1/2 -translate-y-1/2 flex h-7 w-7 items-center justify-center rounded-full text-slate-300 opacity-0 transition-opacity hover:bg-red-50 hover:text-red-500 group-hover:opacity-100"
+                  title="Hapus percakapan"
+                >
+                  <Trash2 className="h-3.5 w-3.5" />
+                </button>
+              </div>
             )
           })}
         </div>
@@ -162,7 +280,7 @@ export default function ChatPage() {
             {/* Messages */}
             <div className="flex-1 overflow-y-auto p-4 space-y-3">
               {messages.map((msg) => {
-                const isOwn = msg.senderId === CURRENT_USER.id
+                const isOwn = msg.senderId === currentUser.id
                 return (
                   <div
                     key={msg.id}
@@ -187,6 +305,7 @@ export default function ChatPage() {
                   </div>
                 )
               })}
+              <div ref={messagesEndRef} />
             </div>
 
             {/* Input */}
@@ -232,5 +351,19 @@ export default function ChatPage() {
         )}
       </div>
     </div>
+  )
+}
+
+export default function ChatPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="flex min-h-[calc(100vh-4rem)] items-center justify-center">
+          <Loader2 className="h-8 w-8 animate-spin text-emerald-600" />
+        </div>
+      }
+    >
+      <ChatContent />
+    </Suspense>
   )
 }

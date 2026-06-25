@@ -1,22 +1,48 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import { useRouter } from "next/navigation"
-import { Camera, X, ToggleLeft, ToggleRight } from "lucide-react"
+import { Camera, Loader2, X, ToggleLeft, ToggleRight } from "lucide-react"
 import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { LocationPicker } from "@/components/features/LocationPicker"
 import { CATEGORIES } from "@/types"
+
+const CONDITIONS = [
+  { value: "Baru", label: "Baru" },
+  { value: "Baik Sekali", label: "Baik Sekali" },
+  { value: "Baik", label: "Baik" },
+  { value: "Cukup", label: "Cukup" },
+  { value: "Rusak", label: "Rusak" },
+] as const
+import { createProduct } from "./actions"
+import { checkAuth } from "@/lib/auth-actions"
 
 export default function SellPage() {
   const router = useRouter()
+  const fileInputRef = useRef<HTMLInputElement>(null)
+  const [checking, setChecking] = useState(true)
   const [isLoading, setIsLoading] = useState(false)
   const [cod, setCod] = useState(true)
-  const [images, setImages] = useState<string[]>([])
+
+  useEffect(() => {
+    checkAuth().then((res) => {
+      if (!res.loggedIn) {
+        router.push("/login")
+      } else {
+        setChecking(false)
+      }
+    })
+  }, [router])
+
+  const [images, setImages] = useState<File[]>([])
+  const [previews, setPreviews] = useState<string[]>([])
   const [form, setForm] = useState({
     title: "",
     category: "",
+    condition: "",
     price: "",
     location: "",
     description: "",
@@ -28,26 +54,59 @@ export default function SellPage() {
     setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }))
   }
 
-  function handleImageAdd() {
-    setImages((prev) => [
-      ...prev,
-      `https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=600&h=400&fit=crop&sig=${prev.length}`,
-    ])
+  function handleFileSelect(e: React.ChangeEvent<HTMLInputElement>) {
+    const files = Array.from(e.target.files ?? [])
+    const remaining = 6 - images.length
+    const toAdd = files.slice(0, remaining)
+
+    const newPreviews = toAdd.map((f) => URL.createObjectURL(f))
+    setImages((prev) => [...prev, ...toAdd])
+    setPreviews((prev) => [...prev, ...newPreviews])
+    e.target.value = ""
   }
 
   function handleImageRemove(index: number) {
+    URL.revokeObjectURL(previews[index])
     setImages((prev) => prev.filter((_, i) => i !== index))
+    setPreviews((prev) => prev.filter((_, i) => i !== index))
   }
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault()
+    if (images.length === 0) {
+      toast.error("Tambahkan minimal 1 foto")
+      return
+    }
     setIsLoading(true)
 
-    await new Promise((resolve) => setTimeout(resolve, 1500))
+    const formData = new FormData()
+    formData.append("title", form.title)
+    formData.append("category", form.category)
+    formData.append("condition", form.condition)
+    formData.append("price", String(form.price))
+    formData.append("location", form.location)
+    formData.append("description", form.description)
+    formData.append("cod", String(cod))
+    images.forEach((file) => formData.append("images", file))
 
-    toast.success("Barang berhasil diunggah!")
-    setIsLoading(false)
-    router.push("/")
+    const result = await createProduct(formData)
+
+    if (result.success) {
+      toast.success(result.message)
+      setIsLoading(false)
+      router.push("/")
+    } else {
+      toast.error(result.message)
+      setIsLoading(false)
+    }
+  }
+
+  if (checking) {
+    return (
+      <div className="flex min-h-[calc(100vh-4rem)] items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-emerald-600" />
+      </div>
+    )
   }
 
   return (
@@ -60,10 +119,10 @@ export default function SellPage() {
             Foto Barang
           </Label>
           <div className="flex flex-wrap gap-3">
-            {images.map((img, i) => (
-              <div key={i} className="relative h-24 w-24 overflow-hidden rounded-xl bg-slate-100">
+            {previews.map((url, i) => (
+              <div key={url} className="relative h-24 w-24 overflow-hidden rounded-xl bg-slate-100">
                 <img
-                  src={img}
+                  src={url}
                   alt={`Foto ${i + 1}`}
                   className="h-full w-full object-cover"
                 />
@@ -79,16 +138,24 @@ export default function SellPage() {
             {images.length < 6 && (
               <button
                 type="button"
-                onClick={handleImageAdd}
+                onClick={() => fileInputRef.current?.click()}
                 className="flex h-24 w-24 flex-col items-center justify-center gap-1 rounded-xl border-2 border-dashed border-slate-300 bg-slate-50 text-slate-400 transition-colors hover:border-emerald-400 hover:text-emerald-500"
               >
                 <Camera className="h-6 w-6" />
                 <span className="text-[10px] font-medium">Tambah Foto</span>
               </button>
             )}
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/*"
+              multiple
+              className="hidden"
+              onChange={handleFileSelect}
+            />
           </div>
           <p className="mt-1.5 text-xs text-slate-400">
-            Maksimal 6 foto. Format JPG, PNG, atau WebP.
+            Maksimal 6 foto. Semua format gambar didukung.
           </p>
         </div>
 
@@ -145,24 +212,39 @@ export default function SellPage() {
               required
             />
           </div>
-          <div className="flex flex-col gap-2">
-            <Label htmlFor="location" className="text-sm font-semibold text-slate-700">
-              Lokasi
-            </Label>
-            <Input
-              id="location"
-              name="location"
-              placeholder="Purbalingga Kota"
-              value={form.location}
-              onChange={handleChange}
-              required
-            />
-          </div>
+          <LocationPicker
+            value={form.location}
+            onChange={(loc) => setForm((prev) => ({ ...prev, location: loc }))}
+            label="Lokasi"
+          />
+        </div>
+
+        <div className="flex flex-col gap-2">
+          <Label htmlFor="condition" className="text-sm font-semibold text-slate-700">
+            Kondisi Barang
+          </Label>
+          <select
+            id="condition"
+            name="condition"
+            value={form.condition}
+            onChange={handleChange}
+            required
+            className="h-10 w-full min-w-0 rounded-lg border border-input bg-transparent px-3 py-2 text-base transition-colors outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 md:text-sm"
+          >
+            <option value="" disabled>
+              Pilih kondisi
+            </option>
+            {CONDITIONS.map((c) => (
+              <option key={c.value} value={c.value}>
+                {c.label}
+              </option>
+            ))}
+          </select>
         </div>
 
         <div className="flex flex-col gap-2">
           <Label htmlFor="description" className="text-sm font-semibold text-slate-700">
-            Deskripsi & Kondisi Barang
+            Deskripsi Barang
           </Label>
           <textarea
             id="description"

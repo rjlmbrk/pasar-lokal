@@ -4,7 +4,7 @@ import Link from "next/link"
 import { Heart, MapPin } from "lucide-react"
 import { useState } from "react"
 import { ImageWithFallback } from "@/components/shared/ImageWithFallback"
-import { formatPrice, formatRelativeTime } from "@/lib/mock-data"
+import { formatPrice, formatRelativeTime } from "@/lib/format"
 import type { ProductItem } from "@/types"
 
 interface ProductCardProps {

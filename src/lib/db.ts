@@ -6,13 +6,24 @@ const globalForPrisma = globalThis as unknown as {
 }
 
 function createPrismaClient() {
+  const databaseUrl = process.env.DATABASE_URL
+  if (!databaseUrl) {
+    throw new Error("DATABASE_URL is required")
+  }
+
+  const url = new URL(databaseUrl)
+  const sslParam = url.searchParams.get("sslaccept")
+
   const adapter = new PrismaMariaDb({
-    host: process.env.DATABASE_HOST ?? "localhost",
-    port: Number(process.env.DATABASE_PORT ?? 3306),
-    user: process.env.DATABASE_USER ?? "root",
-    password: process.env.DATABASE_PASSWORD ?? "",
-    database: process.env.DATABASE_NAME ?? "pasarlokal",
-    connectionLimit: 10,
+    host: url.hostname,
+    port: Number(url.port || 3306),
+    user: decodeURIComponent(url.username),
+    password: decodeURIComponent(url.password),
+    database: url.pathname.replace("/", ""),
+    ssl: sslParam === "strict" ? { rejectUnauthorized: true } : true,
+    connectionLimit: 2,
+    connectTimeout: 15000,
+    socketTimeout: 30000,
   })
 
   return new PrismaClient({ adapter })

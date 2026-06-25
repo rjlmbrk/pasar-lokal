@@ -39,3 +39,14 @@
   --ring: #059669;
   --radius: 0.75rem;
 }
+
+/* Hide the Edge/IE password reveal and clear buttons */
+input[type="password"]::-ms-reveal,
+input[type="password"]::-ms-clear {
+    display: none;
+}
+
+/* Optional: For WebKit browsers (Chrome, Safari) */
+input[type="password"]::-webkit-textfield-decoration-container {
+    display: none;
+}

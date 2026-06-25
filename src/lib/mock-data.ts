@@ -20,10 +20,13 @@ export const MOCK_PRODUCTS: ProductItem[] = [
     category: "FURNITURE",
     condition: "Baik",
     location: "Purbalingga Kota",
+    lat: null,
+    lng: null,
     images: [
       "https://images.unsplash.com/photo-1506439773649-6e0eb8cfb237?w=600&h=400&fit=crop",
       "https://images.unsplash.com/photo-1519947486511-46149fa0a254?w=600&h=400&fit=crop",
     ],
+    cod: true,
     status: "ACTIVE",
     user: {
       id: "u1",
@@ -50,9 +53,12 @@ export const MOCK_PRODUCTS: ProductItem[] = [
     category: "ELECTRONICS",
     condition: "Baik Sekali",
     location: "Bobotsari",
+    lat: null,
+    lng: null,
     images: [
       "https://images.unsplash.com/photo-1611186871348-b1ce696e52c9?w=600&h=400&fit=crop",
     ],
+    cod: true,
     status: "ACTIVE",
     user: {
       id: "u2",
@@ -79,9 +85,12 @@ export const MOCK_PRODUCTS: ProductItem[] = [
     category: "HOME_GARDEN",
     condition: "Sangat Baik",
     location: "Karangmoncol",
+    lat: null,
+    lng: null,
     images: [
       "https://images.unsplash.com/photo-1485955900006-10f4d324d411?w=600&h=400&fit=crop",
     ],
+    cod: true,
     status: "ACTIVE",
     user: {
       id: "u3",
@@ -108,9 +117,12 @@ export const MOCK_PRODUCTS: ProductItem[] = [
     category: "CLOTHING",
     condition: "Baik",
     location: "Kutasari",
+    lat: null,
+    lng: null,
     images: [
       "https://images.unsplash.com/photo-1576995853123-5a10305d93c0?w=600&h=400&fit=crop",
     ],
+    cod: true,
     status: "ACTIVE",
     user: {
       id: "u4",
@@ -137,9 +149,12 @@ export const MOCK_PRODUCTS: ProductItem[] = [
     category: "BOOKS",
     condition: "Cukup",
     location: "Bukateja",
+    lat: null,
+    lng: null,
     images: [
       "https://images.unsplash.com/photo-1544947950-fa07a98d237f?w=600&h=400&fit=crop",
     ],
+    cod: true,
     status: "ACTIVE",
     user: {
       id: "u5",
@@ -166,9 +181,12 @@ export const MOCK_PRODUCTS: ProductItem[] = [
     category: "SPORTS",
     condition: "Baik",
     location: "Pengadegan",
+    lat: null,
+    lng: null,
     images: [
       "https://images.unsplash.com/photo-1576435728678-68d0fbf94e91?w=600&h=400&fit=crop",
     ],
+    cod: true,
     status: "ACTIVE",
     user: {
       id: "u1",
@@ -195,9 +213,12 @@ export const MOCK_PRODUCTS: ProductItem[] = [
     category: "TOYS",
     condition: "Sangat Baik",
     location: "Kemangkon",
+    lat: null,
+    lng: null,
     images: [
       "https://images.unsplash.com/photo-1559454403-b76e3f0ef104?w=600&h=400&fit=crop",
     ],
+    cod: true,
     status: "ACTIVE",
     user: {
       id: "u4",
@@ -224,9 +245,12 @@ export const MOCK_PRODUCTS: ProductItem[] = [
     category: "VEHICLES",
     condition: "Baik",
     location: "Karanganyar",
+    lat: null,
+    lng: null,
     images: [
       "https://images.unsplash.com/photo-1558980664-10a60c5f82a9?w=600&h=400&fit=crop",
     ],
+    cod: true,
     status: "ACTIVE",
     user: {
       id: "u5",

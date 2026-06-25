@@ -1,6 +1,7 @@
 "use server"
 
 import { db } from "@/lib/db"
+import { createSession } from "@/lib/session"
 import bcrypt from "bcryptjs"
 
 export interface ActionResult {
@@ -34,7 +35,7 @@ export async function registerUser(
     errors.confirmPassword = "Kata sandi tidak cocok"
   }
   if (!location || location.trim().length < 2) {
-    errors.location = "Lokasi wajib diisi"
+    errors.location = "Alamat rumah wajib diisi"
   }
 
   if (Object.keys(errors).length > 0) {
@@ -101,5 +102,6 @@ export async function loginUser(
     }
   }
 
+  await createSession(user.id)
   return { success: true, message: "Berhasil masuk ke PasarLokal!" }
 }

@@ -1,8 +1,9 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState, useCallback } from "react"
 import Link from "next/link"
 import { useParams } from "next/navigation"
+import { checkAuth } from "@/lib/auth-actions"
 import {
   Heart,
   MapPin,
@@ -11,22 +12,58 @@ import {
   MessageSquare,
   Star,
   ChevronLeft,
+  ChevronRight,
+  X,
   CheckCircle,
+  Loader2,
 } from "lucide-react"
 import { ImageWithFallback } from "@/components/shared/ImageWithFallback"
-import {
-  getProductById,
-  formatPrice,
-  formatRelativeTime,
-} from "@/lib/mock-data"
+import { formatPrice, formatRelativeTime } from "@/lib/format"
 import { CATEGORIES } from "@/types"
+import type { ProductItem } from "@/types"
+import { fetchProductById } from "../actions"
 
 export default function ProductDetailPage() {
   const params = useParams<{ id: string }>()
+  const [product, setProduct] = useState<ProductItem | null>(null)
+  const [loading, setLoading] = useState(true)
   const [selectedImage, setSelectedImage] = useState(0)
   const [liked, setLiked] = useState(false)
+  const [lightboxOpen, setLightboxOpen] = useState(false)
 
-  const product = getProductById(params.id)
+  const goNext = useCallback(() => {
+    setSelectedImage((i) => (i + 1) % product!.images.length)
+  }, [product])
+
+  const goPrev = useCallback(() => {
+    setSelectedImage((i) => (i - 1 + product!.images.length) % product!.images.length)
+  }, [product])
+
+  useEffect(() => {
+    if (!lightboxOpen) return
+    function handleKey(e: KeyboardEvent) {
+      if (e.key === "Escape") setLightboxOpen(false)
+      if (e.key === "ArrowRight") goNext()
+      if (e.key === "ArrowLeft") goPrev()
+    }
+    window.addEventListener("keydown", handleKey)
+    return () => window.removeEventListener("keydown", handleKey)
+  }, [lightboxOpen, goNext, goPrev])
+
+  useEffect(() => {
+    fetchProductById(params.id).then((result) => {
+      setProduct(result)
+      setLoading(false)
+    })
+  }, [params.id])
+
+  if (loading) {
+    return (
+      <div className="flex min-h-[calc(100vh-4rem)] items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-emerald-600" />
+      </div>
+    )
+  }
 
   if (!product) {
     return (
@@ -58,7 +95,11 @@ export default function ProductDetailPage() {
 
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-5">
         <div className="md:col-span-1 lg:col-span-3">
-          <div className="relative aspect-[4/3] overflow-hidden rounded-2xl bg-slate-100">
+          <button
+            type="button"
+            onClick={() => setLightboxOpen(true)}
+            className="relative aspect-[4/3] w-full overflow-hidden rounded-2xl bg-slate-100"
+          >
             <ImageWithFallback
               src={product.images[selectedImage]}
               alt={product.title}
@@ -66,7 +107,7 @@ export default function ProductDetailPage() {
               className="object-cover"
               fallbackText={product.title[0]}
             />
-          </div>
+          </button>
           {product.images.length > 1 && (
             <div className="mt-3 flex gap-2 overflow-x-auto pb-1 scrollbar-none">
               {product.images.map((img, i) => (
@@ -111,10 +152,12 @@ export default function ProductDetailPage() {
               <Clock className="h-3.5 w-3.5" />
               {formatRelativeTime(product.createdAt)}
             </span>
-            <span className="flex items-center gap-1">
-              <Banknote className="h-3.5 w-3.5" />
-              COD
-            </span>
+            {product.cod && (
+              <span className="flex items-center gap-1">
+                <Banknote className="h-3.5 w-3.5" />
+                COD
+              </span>
+            )}
           </div>
 
           <div className="flex flex-wrap gap-2">
@@ -160,13 +203,21 @@ export default function ProductDetailPage() {
           </div>
 
           <div className="flex gap-3">
-            <Link
-              href={`/chat?product=${product.id}&seller=${product.user.id}`}
+            <button
+              type="button"
+              onClick={async () => {
+                const auth = await checkAuth()
+                if (auth.loggedIn) {
+                  window.location.href = `/chat?product=${product.id}&seller=${product.user.id}`
+                } else {
+                  window.location.href = `/login?redirect=${encodeURIComponent(`/chat?product=${product.id}&seller=${product.user.id}`)}`
+                }
+              }}
               className="flex flex-1 items-center justify-center gap-2 rounded-full bg-emerald-600 px-5 py-3 text-sm font-semibold text-white transition-colors hover:bg-emerald-700"
             >
               <MessageSquare className="h-4 w-4" />
               Chat Now
-            </Link>
+            </button>
             <button
               type="button"
               onClick={() => setLiked(!liked)}
@@ -182,15 +233,69 @@ export default function ProductDetailPage() {
             </button>
           </div>
 
-          <div className="flex items-center gap-2 rounded-xl bg-emerald-50 p-3 text-xs text-emerald-700">
-            <CheckCircle className="h-4 w-4 shrink-0" />
-            <span>
-              Transaksi aman via COD. Bertemu langsung di tempat umum yang sudah
-              disepakati.
-            </span>
-          </div>
+          {product.cod && (
+            <div className="flex items-center gap-2 rounded-xl bg-emerald-50 p-3 text-xs text-emerald-700">
+              <CheckCircle className="h-4 w-4 shrink-0" />
+              <span>
+                Transaksi aman via COD. Bertemu langsung di tempat umum yang sudah
+                disepakati.
+              </span>
+            </div>
+          )}
         </div>
       </div>
+
+      {lightboxOpen && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/80"
+          onClick={() => setLightboxOpen(false)}
+        >
+          <button
+            type="button"
+            onClick={() => setLightboxOpen(false)}
+            className="absolute right-4 top-4 z-10 rounded-full bg-black/50 p-2 text-white transition-colors hover:bg-black/70"
+          >
+            <X className="h-5 w-5" />
+          </button>
+
+          {product.images.length > 1 && (
+            <>
+              <button
+                type="button"
+                onClick={(e) => { e.stopPropagation(); goPrev() }}
+                className="absolute left-4 z-10 rounded-full bg-black/50 p-2 text-white transition-colors hover:bg-black/70"
+              >
+                <ChevronLeft className="h-6 w-6" />
+              </button>
+              <button
+                type="button"
+                onClick={(e) => { e.stopPropagation(); goNext() }}
+                className="absolute right-4 z-10 rounded-full bg-black/50 p-2 text-white transition-colors hover:bg-black/70"
+              >
+                <ChevronRight className="h-6 w-6" />
+              </button>
+            </>
+          )}
+
+          <div
+            className="relative max-h-[90vh] max-w-[90vw]"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <ImageWithFallback
+              src={product.images[selectedImage]}
+              alt={product.title}
+              width={1200}
+              height={900}
+              className="h-auto max-h-[90vh] w-auto max-w-[90vw] rounded-lg object-contain"
+              fallbackText={product.title[0]}
+            />
+          </div>
+
+          <div className="absolute bottom-6 left-1/2 -translate-x-1/2 rounded-full bg-black/50 px-3 py-1 text-sm text-white">
+            {selectedImage + 1} / {product.images.length}
+          </div>
+        </div>
+      )}
     </div>
   )
 }
