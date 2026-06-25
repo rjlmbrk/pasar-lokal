@@ -49,6 +49,19 @@ export async function deleteProduct(productId: string): Promise<boolean> {
 
   try {
     await db.$transaction(async (tx) => {
+      const savedBy = await tx.savedProduct.findMany({
+        where: { productId },
+        select: { userId: true },
+      })
+      if (savedBy.length > 0) {
+        await tx.savedProduct.deleteMany({ where: { productId } })
+        const userIds = [...new Set(savedBy.map((s) => s.userId))]
+        await tx.user.updateMany({
+          where: { id: { in: userIds } },
+          data: { savedItems: { decrement: 1 } },
+        })
+      }
+
       const chats = await tx.chat.findMany({
         where: { productId },
         select: { id: true },
