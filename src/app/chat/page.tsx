@@ -78,6 +78,7 @@ function ChatContent() {
 
         if (targetChatId) {
           setActiveChatId(targetChatId)
+          setShowSidebar(false)
         }
         setLoading(false)
       }
