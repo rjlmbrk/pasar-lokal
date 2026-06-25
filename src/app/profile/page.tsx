@@ -24,6 +24,7 @@ import { toast } from "sonner"
 import {
   fetchCurrentUser,
   fetchUserProducts,
+  fetchSavedProducts,
   logoutAction,
   deleteProduct,
   updateProductStatus,
@@ -43,13 +44,17 @@ export default function ProfilePage() {
   const [editCondition, setEditCondition] = useState("")
   const [editDescription, setEditDescription] = useState("")
   const [saving, setSaving] = useState(false)
-  const [activeTab, setActiveTab] = useState<"SEMUA" | "LISTING" | "TERJUAL">("SEMUA")
+  const [activeTab, setActiveTab] = useState<"SEMUA" | "LISTING" | "TERJUAL" | "DISIMPAN">("SEMUA")
+  const [savedProducts, setSavedProducts] = useState<ProductItem[]>([])
+  const [loadingSaved, setLoadingSaved] = useState(false)
 
   const filteredProducts = products.filter((p) => {
     if (activeTab === "LISTING") return p.status === "ACTIVE"
     if (activeTab === "TERJUAL") return p.status === "SOLD"
     return true
   })
+
+  const displayProducts = activeTab === "DISIMPAN" ? savedProducts : filteredProducts
 
   const handleLogout = useCallback(async () => {
     await logoutAction()
@@ -70,6 +75,16 @@ export default function ProfilePage() {
     }
     load()
   }, [router])
+
+  useEffect(() => {
+    if (activeTab === "DISIMPAN" && savedProducts.length === 0) {
+      setLoadingSaved(true)
+      fetchSavedProducts().then((items) => {
+        setSavedProducts(items)
+        setLoadingSaved(false)
+      })
+    }
+  }, [activeTab, savedProducts.length])
 
   if (loading || !user) {
     return (
@@ -171,7 +186,7 @@ export default function ProfilePage() {
       {/* Listing Grid */}
       <div className="mt-6">
         <div className="mb-4 flex items-center gap-2">
-          {(["SEMUA", "LISTING", "TERJUAL"] as const).map((tab) => (
+          {(["SEMUA", "LISTING", "TERJUAL", "DISIMPAN"] as const).map((tab) => (
             <button
               key={tab}
               type="button"
@@ -185,12 +200,26 @@ export default function ProfilePage() {
               {tab === "SEMUA" && "Semua"}
               {tab === "LISTING" && "Listing Aktif"}
               {tab === "TERJUAL" && "Terjual"}
+              {tab === "DISIMPAN" && "Disimpan"}
             </button>
           ))}
         </div>
 
-        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
-          {filteredProducts.map((product) => (
+        {activeTab === "DISIMPAN" && loadingSaved ? (
+          <div className="flex items-center justify-center py-16">
+            <Loader2 className="h-6 w-6 animate-spin text-emerald-600" />
+          </div>
+        ) : activeTab === "DISIMPAN" && displayProducts.length === 0 ? (
+          <div className="flex flex-col items-center justify-center py-16 text-center">
+            <Heart className="mb-2 h-8 w-8 text-slate-300" />
+            <p className="text-sm font-medium text-slate-500">Belum ada barang disimpan</p>
+            <p className="mt-1 text-xs text-slate-400">
+               Tekan ikon hati di halaman produk untuk menyimpan
+            </p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
+          {displayProducts.map((product) => (
             <div
               key={product.id}
               className="group relative flex flex-col overflow-hidden rounded-2xl bg-white ring-1 ring-slate-200/80 transition-all hover:shadow-md"
@@ -219,43 +248,52 @@ export default function ProfilePage() {
                 <p className="text-base font-bold text-emerald-600">
                   {formatPrice(product.price)}
                 </p>
-                <div className="flex items-center justify-between">
+                {activeTab !== "DISIMPAN" ? (
+                  <div className="flex items-center justify-between">
+                    <span className="text-[10px] text-slate-400">
+                      {formatRelativeTime(product.createdAt)}
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setEditProduct(product)
+                        setEditTitle(product.title)
+                        setEditPrice(String(product.price))
+                        setEditCondition(product.condition)
+                        setEditDescription(product.description)
+                      }}
+                      className="flex items-center gap-1 text-[10px] font-medium text-slate-400 transition-colors hover:text-emerald-600"
+                    >
+                      <Edit3 className="h-3 w-3" />
+                      Edit
+                    </button>
+                  </div>
+                ) : (
                   <span className="text-[10px] text-slate-400">
-                    {formatRelativeTime(product.createdAt)}
+                    {product.user.name}
                   </span>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setEditProduct(product)
-                      setEditTitle(product.title)
-                      setEditPrice(String(product.price))
-                      setEditCondition(product.condition)
-                      setEditDescription(product.description)
-                    }}
-                    className="flex items-center gap-1 text-[10px] font-medium text-slate-400 transition-colors hover:text-emerald-600"
-                  >
-                    <Edit3 className="h-3 w-3" />
-                    Edit
-                  </button>
-                </div>
+                )}
               </div>
             </div>
           ))}
 
-          {/* Add Item Card */}
-          <Link
-            href="/sell"
-            className="flex flex-col items-center justify-center gap-2 rounded-2xl border-2 border-dashed border-slate-300 bg-slate-50 p-6 transition-colors hover:border-emerald-400 hover:bg-emerald-50"
-          >
-            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-emerald-100 text-emerald-600">
-              <PlusCircle className="h-5 w-5" />
-            </div>
-            <p className="text-sm font-medium text-slate-500">Tambah Barang</p>
-            <p className="text-center text-[10px] text-slate-400">
-              Pasang iklan barang bekas Anda
-            </p>
-          </Link>
+          {activeTab !== "DISIMPAN" && (
+            <Link
+              href="/sell"
+              className="flex flex-col items-center justify-center gap-2 rounded-2xl border-2 border-dashed border-slate-300 bg-slate-50 p-6 transition-colors hover:border-emerald-400 hover:bg-emerald-50"
+            >
+              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-emerald-100 text-emerald-600">
+                <PlusCircle className="h-5 w-5" />
+              </div>
+              <p className="text-sm font-medium text-slate-500">Tambah Barang</p>
+              <p className="text-center text-[10px] text-slate-400">
+                Pasang iklan barang bekas Anda
+              </p>
+            </Link>
+          )}
         </div>
+      )}
+
       </div>
 
       {/* Logout Confirmation Modal */}

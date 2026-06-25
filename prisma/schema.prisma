@@ -39,7 +39,8 @@ model User {
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
 
-  products  Product[]
+  products      Product[]
+  savedProducts SavedProduct[]
   chatsAsBuyer  Chat[]    @relation("BuyerChats")
   chatsAsSeller Chat[]    @relation("SellerChats")
   messages  Message[]
@@ -63,7 +64,20 @@ model Product {
   createdAt   DateTime        @default(now())
   updatedAt   DateTime        @updatedAt
 
-  chats Chat[]
+  chats     Chat[]
+  savedBy   SavedProduct[]
+}
+
+model SavedProduct {
+  id        String   @id @default(cuid())
+  userId    String
+  productId String
+  user      User     @relation(fields: [userId], references: [id])
+  product   Product  @relation(fields: [productId], references: [id])
+  createdAt DateTime @default(now())
+
+  @@unique([userId, productId])
+  @@index([userId])
 }
 
 model Chat {

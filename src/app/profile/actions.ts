@@ -124,3 +124,35 @@ export async function updateProduct(
     return false
   }
 }
+
+export async function fetchSavedProducts(): Promise<ProductItem[]> {
+  const user = await getCurrentUser()
+  if (!user) return []
+
+  const saved = await db.savedProduct.findMany({
+    where: { userId: user.id },
+    include: { product: { include: { user: true } } },
+    orderBy: { createdAt: "desc" },
+  })
+
+  return saved.map((s) => {
+    const images = parseImages(s.product.images)
+    return {
+      id: s.product.id,
+      title: s.product.title,
+      description: s.product.description,
+      price: s.product.price,
+      category: s.product.category as ProductItem["category"],
+      condition: s.product.condition,
+      location: s.product.location,
+      lat: s.product.lat,
+      lng: s.product.lng,
+      images,
+      cod: s.product.cod,
+      status: s.product.status as ProductItem["status"],
+      user: s.product.user as unknown as UserProfile,
+      createdAt: s.product.createdAt,
+      updatedAt: s.product.updatedAt,
+    }
+  })
+}

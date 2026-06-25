@@ -21,7 +21,7 @@ import { ImageWithFallback } from "@/components/shared/ImageWithFallback"
 import { formatPrice, formatRelativeTime } from "@/lib/format"
 import { CATEGORIES } from "@/types"
 import type { ProductItem } from "@/types"
-import { fetchProductById } from "../actions"
+import { fetchProductById, checkIsSaved, toggleSaveProduct } from "../actions"
 
 export default function ProductDetailPage() {
   const params = useParams<{ id: string }>()
@@ -51,8 +51,12 @@ export default function ProductDetailPage() {
   }, [lightboxOpen, goNext, goPrev])
 
   useEffect(() => {
-    fetchProductById(params.id).then((result) => {
+    Promise.all([
+      fetchProductById(params.id),
+      checkIsSaved(params.id),
+    ]).then(([result, saved]) => {
       setProduct(result)
+      setLiked(saved)
       setLoading(false)
     })
   }, [params.id])
@@ -220,7 +224,18 @@ export default function ProductDetailPage() {
             </button>
             <button
               type="button"
-              onClick={() => setLiked(!liked)}
+              onClick={async () => {
+                const auth = await checkAuth()
+                if (!auth.loggedIn) {
+                  window.location.href = `/login?redirect=${encodeURIComponent(`/product-detail/${product.id}`)}`
+                  return
+                }
+                const result = await toggleSaveProduct(product.id)
+                if ("error" in result) {
+                  return
+                }
+                setLiked(result.saved)
+              }}
               className="flex items-center justify-center rounded-full border border-slate-200 p-3 transition-colors hover:border-emerald-200"
             >
               <Heart
