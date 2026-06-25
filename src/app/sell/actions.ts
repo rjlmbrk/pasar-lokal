@@ -44,21 +44,27 @@ export async function createProduct(formData: FormData) {
       imageFiles.map((file) => processAndSaveImage(file))
     )
 
-    await db.product.create({
-      data: {
-        title,
-        description,
-        price,
-        category: category as any,
-        condition,
-        location,
-        cod,
-        lat,
-        lng,
-        images: JSON.stringify(imagePaths),
-        userId,
-      },
-    })
+    await db.$transaction([
+      db.product.create({
+        data: {
+          title,
+          description,
+          price,
+          category: category as any,
+          condition,
+          location,
+          cod,
+          lat,
+          lng,
+          images: JSON.stringify(imagePaths),
+          userId,
+        },
+      }),
+      db.user.update({
+        where: { id: userId },
+        data: { activeListing: { increment: 1 } },
+      }),
+    ])
 
     return { success: true, message: "Barang berhasil diunggah!" }
   } catch (error) {

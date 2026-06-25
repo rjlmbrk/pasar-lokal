@@ -43,6 +43,13 @@ export default function ProfilePage() {
   const [editCondition, setEditCondition] = useState("")
   const [editDescription, setEditDescription] = useState("")
   const [saving, setSaving] = useState(false)
+  const [activeTab, setActiveTab] = useState<"SEMUA" | "LISTING" | "TERJUAL">("SEMUA")
+
+  const filteredProducts = products.filter((p) => {
+    if (activeTab === "LISTING") return p.status === "ACTIVE"
+    if (activeTab === "TERJUAL") return p.status === "SOLD"
+    return true
+  })
 
   const handleLogout = useCallback(async () => {
     await logoutAction()
@@ -163,12 +170,27 @@ export default function ProfilePage() {
 
       {/* Listing Grid */}
       <div className="mt-6">
-        <h2 className="mb-4 text-base font-bold text-slate-800">
-          Barang Saya
-        </h2>
+        <div className="mb-4 flex items-center gap-2">
+          {(["SEMUA", "LISTING", "TERJUAL"] as const).map((tab) => (
+            <button
+              key={tab}
+              type="button"
+              onClick={() => setActiveTab(tab)}
+              className={`rounded-full px-4 py-1.5 text-xs font-semibold transition-colors ${
+                activeTab === tab
+                  ? "bg-emerald-600 text-white"
+                  : "bg-slate-100 text-slate-500 hover:bg-slate-200"
+              }`}
+            >
+              {tab === "SEMUA" && "Semua"}
+              {tab === "LISTING" && "Listing Aktif"}
+              {tab === "TERJUAL" && "Terjual"}
+            </button>
+          ))}
+        </div>
 
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
-          {products.map((product) => (
+          {filteredProducts.map((product) => (
             <div
               key={product.id}
               className="group relative flex flex-col overflow-hidden rounded-2xl bg-white ring-1 ring-slate-200/80 transition-all hover:shadow-md"
