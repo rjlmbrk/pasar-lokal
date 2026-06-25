@@ -8,7 +8,7 @@ export async function processAndSaveImage(file: File): Promise<string> {
 
   const processed = await sharp(buffer)
     .resize(800, 800, { fit: "inside", withoutEnlargement: true })
-    .avif({ quality: 70 })
+    .avif({ quality: 50 })
     .toBuffer()
 
   const blob = await put(`uploads/products/${filename}`, processed, {

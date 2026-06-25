@@ -89,14 +89,19 @@ export default function SellPage() {
     formData.append("cod", String(cod))
     images.forEach((file) => formData.append("images", file))
 
-    const result = await createProduct(formData)
+    try {
+      const result = await createProduct(formData)
 
-    if (result.success) {
-      toast.success(result.message)
-      setIsLoading(false)
-      router.push("/")
-    } else {
-      toast.error(result.message)
+      if (result.success) {
+        toast.success(result.message)
+        setIsLoading(false)
+        router.push("/")
+      } else {
+        toast.error(result.message)
+        setIsLoading(false)
+      }
+    } catch {
+      toast.error("Terjadi kesalahan. Coba lagi.")
       setIsLoading(false)
     }
   }
