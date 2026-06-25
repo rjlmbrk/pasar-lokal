@@ -2,9 +2,11 @@
 
 import Link from "next/link"
 import { Heart, MapPin } from "lucide-react"
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { ImageWithFallback } from "@/components/shared/ImageWithFallback"
 import { formatPrice, formatRelativeTime } from "@/lib/format"
+import { checkAuth } from "@/lib/auth-actions"
+import { checkIsSaved, toggleSaveProduct } from "@/app/product-detail/actions"
 import type { ProductItem } from "@/types"
 
 interface ProductCardProps {
@@ -13,6 +15,10 @@ interface ProductCardProps {
 
 export function ProductCard({ product }: ProductCardProps) {
   const [liked, setLiked] = useState(false)
+
+  useEffect(() => {
+    checkIsSaved(product.id).then(setLiked)
+  }, [product.id])
 
   return (
     <Link
@@ -29,10 +35,17 @@ export function ProductCard({ product }: ProductCardProps) {
         />
         <button
           type="button"
-          onClick={(e) => {
+          onClick={async (e) => {
             e.preventDefault()
             e.stopPropagation()
-            setLiked(!liked)
+            const auth = await checkAuth()
+            if (!auth.loggedIn) {
+              window.location.href = `/login?redirect=${encodeURIComponent(`/product-detail/${product.id}`)}`
+              return
+            }
+            const result = await toggleSaveProduct(product.id)
+            if ("error" in result) return
+            setLiked(result.saved)
           }}
           className="absolute right-2 top-2 flex h-8 w-8 items-center justify-center rounded-full bg-white/80 backdrop-blur-sm transition-colors hover:bg-white"
         >
