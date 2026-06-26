@@ -4,6 +4,7 @@ import { getCurrentUser, deleteSession } from "@/lib/session"
 import { db } from "@/lib/db"
 import type { ProductItem, UserProfile } from "@/types"
 import { parseImages } from "@/lib/format"
+import { processAndSaveImage } from "@/lib/image"
 
 export async function fetchCurrentUser(): Promise<UserProfile | null> {
   return getCurrentUser()
@@ -168,4 +169,40 @@ export async function fetchSavedProducts(): Promise<ProductItem[]> {
       updatedAt: s.product.updatedAt,
     }
   })
+}
+
+export async function updateProfile(formData: FormData): Promise<{ success: boolean; message: string }> {
+  const user = await getCurrentUser()
+  if (!user) return { success: false, message: "Harus login" }
+
+  const name = formData.get("name") as string
+  const email = formData.get("email") as string
+  const location = formData.get("location") as string
+  const imageFile = formData.get("image") as File
+
+  if (!name?.trim()) return { success: false, message: "Nama tidak boleh kosong" }
+  if (!email?.trim()) return { success: false, message: "Email tidak boleh kosong" }
+  if (!location?.trim()) return { success: false, message: "Lokasi tidak boleh kosong" }
+
+  try {
+    let imageUrl: string | undefined | null = undefined
+    if (imageFile && imageFile.size > 0) {
+      imageUrl = await processAndSaveImage(imageFile)
+    }
+
+    await db.user.update({
+      where: { id: user.id },
+      data: {
+        name: name.trim(),
+        email: email.trim(),
+        location: location.trim(),
+        ...(imageUrl !== undefined ? { image: imageUrl } : {}),
+      },
+    })
+
+    return { success: true, message: "Profil berhasil diperbarui" }
+  } catch (e) {
+    console.error("updateProfile error:", e)
+    return { success: false, message: "Gagal memperbarui profil" }
+  }
 }
