@@ -170,7 +170,20 @@ export default function HomePage() {
               {filtered.length} barang
             </span>
           </div>
-          {filtered.length === 0 ? (
+          {loading ? (
+            <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
+              {Array.from({ length: 8 }).map((_, i) => (
+                <div key={i} className="animate-pulse rounded-2xl bg-white ring-1 ring-slate-200/80">
+                  <div className="aspect-[4/3] rounded-t-2xl bg-slate-200" />
+                  <div className="flex flex-col gap-2 p-3">
+                    <div className="h-4 w-3/4 rounded bg-slate-200" />
+                    <div className="h-5 w-1/2 rounded bg-slate-200" />
+                    <div className="h-3 w-1/3 rounded bg-slate-200" />
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : filtered.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-16 text-center">
               <span className="text-4xl mb-3">📭</span>
               <p className="text-base font-semibold text-slate-700">Barang tidak tersedia</p>
