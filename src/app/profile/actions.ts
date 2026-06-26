@@ -49,6 +49,9 @@ export async function deleteProduct(productId: string): Promise<boolean> {
   if (!user) return false
 
   try {
+    const product = await db.product.findUnique({ where: { id: productId }, select: { status: true, userId: true } })
+    if (!product || product.userId !== user.id) return false
+
     await db.$transaction(async (tx) => {
       const savedBy = await tx.savedProduct.findMany({
         where: { productId },
@@ -75,6 +78,13 @@ export async function deleteProduct(productId: string): Promise<boolean> {
       await tx.product.deleteMany({
         where: { id: productId, userId: user.id },
       })
+
+      if (product.status === "ACTIVE") {
+        await tx.user.update({
+          where: { id: user.id },
+          data: { activeListing: { decrement: 1 } },
+        })
+      }
     })
     return true
   } catch {
@@ -90,26 +100,36 @@ export async function updateProductStatus(
   if (!user) return false
 
   try {
-    if (status === "SOLD") {
-      await db.$transaction([
-        db.product.update({
-          where: { id: productId, userId: user.id },
-          data: { status },
-        }),
-        db.user.update({
-          where: { id: user.id },
-          data: {
-            productsSold: { increment: 1 },
-            activeListing: user.activeListing > 0 ? { decrement: 1 } : 0,
-          },
-        }),
-      ])
-    } else {
-      await db.product.update({
+    const current = await db.product.findUnique({ where: { id: productId }, select: { status: true } })
+    if (!current || current.status === status) return true
+
+    const inc: { productsSold?: number; activeListing?: number } = {}
+
+    if (current.status === "ACTIVE" && status === "SOLD") { inc.productsSold = 1; inc.activeListing = -1 }
+    else if (current.status === "ACTIVE" && status === "HIDDEN") { inc.activeListing = -1 }
+    else if (current.status === "SOLD" && status === "ACTIVE") { inc.productsSold = -1; inc.activeListing = 1 }
+    else if (current.status === "SOLD" && status === "HIDDEN") { inc.productsSold = -1 }
+    else if (current.status === "HIDDEN" && status === "ACTIVE") { inc.activeListing = 1 }
+    else if (current.status === "HIDDEN" && status === "SOLD") { inc.activeListing = -1; inc.productsSold = 1 }
+
+    await db.$transaction([
+      db.product.update({
         where: { id: productId, userId: user.id },
         data: { status },
-      })
-    }
+      }),
+      ...(inc.productsSold !== undefined
+        ? [db.user.update({
+            where: { id: user.id },
+            data: { productsSold: inc.productsSold > 0 ? { increment: inc.productsSold } : { decrement: Math.abs(inc.productsSold) } },
+          })]
+        : []),
+      ...(inc.activeListing !== undefined
+        ? [db.user.update({
+            where: { id: user.id },
+            data: { activeListing: inc.activeListing > 0 ? { increment: inc.activeListing } : { decrement: Math.abs(inc.activeListing) } },
+          })]
+        : []),
+    ])
     return true
   } catch {
     return false
