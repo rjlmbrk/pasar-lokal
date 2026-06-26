@@ -177,7 +177,7 @@ export default function ProductDetailPage() {
             <h4 className="mb-1 text-sm font-semibold text-slate-700">
               Deskripsi
             </h4>
-            <p className="text-sm leading-relaxed text-slate-500">
+            <p className="text-sm leading-relaxed text-slate-500 whitespace-pre-wrap">
               {product.description}
             </p>
           </div>
